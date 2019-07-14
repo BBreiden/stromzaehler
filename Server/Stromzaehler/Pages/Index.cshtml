@@ -1,0 +1,15 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "academia";
+}
+
+<div class="text-center">
+    <h1>academia test</h1>
+    @Model.Counter.Count
+
+    @foreach (var d in Model.Counter.GetReversedBlinks())
+    {
+        <p>@d.ToString("yyyy-MM-ddThh:mm:ss,f")</p>
+    }
+</div>
