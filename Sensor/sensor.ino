@@ -1,13 +1,11 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include "src/secrets/secrets.h"
 
 WiFiServer server(80);
 String header;
 String output5State = "off";
 String output4State = "off";
-
-String wlanName = "";
-String wlanKey = "";
 
 String baseUrl = "http://192.168.0.27:5000/api/counter/inc";
 
@@ -19,7 +17,7 @@ void setup() {
     Serial.begin(115200);
     Serial.println();
   
-    WiFi.begin(wlanName, wlanKey);
+    WiFi.begin(WLAN_NAME, WLAN_SECRET);
   
     Serial.print("Connecting");
     while (WiFi.status() != WL_CONNECTED)

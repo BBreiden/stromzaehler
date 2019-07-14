@@ -7,3 +7,5 @@
 /Server/**/Properties
 .vscode/tasks.json
 .vscode/launch.json
+/**/secrets.h
+.vscode/c_cpp_properties.json
