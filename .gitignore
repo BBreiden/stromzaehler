@@ -5,3 +5,5 @@
 /.vs
 /Server/**/obj
 /Server/**/Properties
+.vscode/tasks.json
+.vscode/launch.json
