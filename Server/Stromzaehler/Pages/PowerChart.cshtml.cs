@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -23,17 +24,27 @@ namespace Stromzaehler.Pages
             blinks = await db.Blinks.AsNoTracking().ToListAsync();
         }
 
-        public string GetLabels()
+        public string GetLabels(int lastHours)
         {
-            return $"['{string.Join("','", blinks.Select(b => b.Timestamp.ToString()).ToArray())}']";
+            var labels = GetBlinks(lastHours)
+            //.TakeLast(count)
+            .Select(b => b.Timestamp.ToString("dd/MM HH:mm"))
+            .ToArray();
+            return $"['{string.Join("','", labels)}']";
         }
 
-        public string GetData()
+        public string GetData(int lastHours)
         {
-            var values = blinks
-                .Diff((next, prev) => 
-                3600 * (next.Value - prev.Value) / (prev.Timestamp - next.Timestamp).TotalSeconds);
+            var values = GetBlinks(lastHours)
+                // .TakeLast(count)
+                .Diff((next, prev) =>
+                3600 * (next.Value - prev.Value) / (next.Timestamp - prev.Timestamp).TotalSeconds);
             return $"[{string.Join(',', values)}]";
+        }
+
+        public IEnumerable<Blink> GetBlinks(int lastHours) {
+            return blinks.Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
+            .OrderBy(b => b.Timestamp);
         }
     }
 }

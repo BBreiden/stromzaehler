@@ -31,6 +31,21 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/PowerChart">Power</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" 
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false">
+                                Power
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="/powerchart/1">Last Hour</a>
+                                <a class="dropdown-item" href="/powerchart/3">Last 3 Hours</a>
+                                <a class="dropdown-item" href="/powerchart/12">Last 12 Hours</a>
+                                <a class="dropdown-item" href="/powerchart/24">Last 24 Hours</a>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -1,15 +1,16 @@
-﻿@page
+﻿@page "{hours=3}"
 @model Stromzaehler.Pages.PowerChartModel
 @{
-    ViewData["Title"] = "Power Chart";
-
+    ViewData["Title"] = "Power Chart of last " + RouteData.Values["hours"] + " hours";
+    if (!int.TryParse(RouteData.Values["hours"] as string, out var lastHours)) {
+        lastHours = 3;
+    }
 }
 
 <script src="~/lib/chartjs/dist/Chart.bundle.min.js"></script>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
 <h1>@ViewData["Title"]</h1>
-
 <canvas id="chart" style="width:100%; height:500px"></canvas>
 
 <script type="text/javascript">
@@ -17,9 +18,9 @@
         new Chart(document.getElementById("chart"), {
             type: 'line',
             data: {
-                labels: @Html.Raw(Model.GetLabels()),
+                labels: @Html.Raw(Model.GetLabels(lastHours)),
                 datasets: [{
-                    data: @Model.GetData(),
+                    data: @Model.GetData(lastHours),
                     label: "Power",
                     borderColor: "#3e95cd",
                     fill: true
@@ -30,6 +31,15 @@
                 title: {
                     display: true,
                     text: 'Power by time'
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            max: 2500,
+                            stepSize: 150
+                        }
+                    }]
                 }
             }
         });
