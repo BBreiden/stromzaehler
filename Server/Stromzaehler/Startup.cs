@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stromzaehler.Controller;
@@ -32,8 +33,10 @@ namespace Stromzaehler
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddSingleton(new CounterModel());
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            //services.AddDbContext<BlinkDataContext>(options => options.UseInMemoryDatabase());
+            services.AddDbContext<BlinkDataContext>(o => o.UseSqlite("Filename=BlinkData.db"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

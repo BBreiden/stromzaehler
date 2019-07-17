@@ -6,10 +6,24 @@
 
 <div class="text-center">
     <h1>academia test</h1>
-    @Model.Counter.Count
+    @Model.Database.Blinks.Count();
 
-    @foreach (var d in Model.Counter.GetReversedBlinks())
-    {
-        <p>@d.ToString("yyyy-MM-ddThh:mm:ss,f")</p>
-    }
+    <table>
+        <thead>
+            <tr>
+                <th>When</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Database.Blinks.Take(20).OrderByDescending(b => b.Timestamp))
+            {
+                <tr>
+                    <td>@d.Timestamp.ToString("yyyy-MM-ddThh:mm:ss,f")</td>
+                    <td>@d.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
 </div>

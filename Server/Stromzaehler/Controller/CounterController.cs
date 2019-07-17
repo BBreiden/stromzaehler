@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
@@ -10,26 +13,35 @@ namespace Stromzaehler.Controller
     public class CounterController : ControllerBase
     {
         private readonly ILogger<CounterController> log;
-        private readonly CounterModel counter = new CounterModel();
+        private readonly BlinkDataContext blinkData;
 
-        public CounterController(ILogger<CounterController> log, CounterModel counter)
+        public CounterController(ILogger<CounterController> log, BlinkDataContext db)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
-            this.counter = counter;
+            blinkData = db;
         }
 
-        [HttpGet("get")]
-        public CounterModel Get()
+        [HttpGet()]
+        public IEnumerable<Blink> Get()
         {
-            return counter;
+            return blinkData.Blinks.ToArray();
         }
 
-        [HttpGet("inc")]
-        public CounterModel Increase() 
+        [HttpPost()]
+        public async Task PostAsync([FromBody] PostData data)
         {
-            counter.Count++;
-            counter.Blinks.Add(DateTimeOffset.Now);
-            return counter;
+            if (!ModelState.IsValid)
+            {
+                throw new ArgumentException("Invalid model.");
+            }
+
+            blinkData.Blinks.Add(new Blink() { Value = data.Count, Timestamp = DateTimeOffset.Now });
+            await blinkData.SaveChangesAsync();
+        }
+
+        public class PostData
+        {
+            public int Count { get; set; }
         }
     }
 }

@@ -4,15 +4,10 @@ using System.Linq;
 
 namespace Stromzaehler.Models
 {
-    public class CounterModel
+    public class Blink
     {
-        public int Count { get; set; }
-        public List<DateTimeOffset> Blinks { get; set; } = new List<DateTimeOffset>();
-        public IEnumerable<DateTimeOffset> GetReversedBlinks()
-        {
-            var result = Blinks.ToList();
-            result.Reverse();
-            return result;
-        }
+        public long BlinkId { get; set; }
+        public DateTimeOffset Timestamp { get; set; }
+        public int Value { get; set; }
     }
 }

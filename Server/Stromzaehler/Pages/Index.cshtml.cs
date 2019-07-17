@@ -6,12 +6,12 @@ namespace Stromzaehler.Pages
 {
     public class IndexModel : PageModel
     {
-        public IndexModel(CounterModel counter)
+        public IndexModel(BlinkDataContext database)
         {
-            Counter = counter ?? throw new ArgumentNullException(nameof(counter));
+            Database = database ?? throw new ArgumentNullException(nameof(database));
         }
 
-        public CounterModel Counter { get; }
+        public BlinkDataContext Database { get; }
 
         public void OnGet()
         {
