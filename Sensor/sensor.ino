@@ -2,22 +2,50 @@
 #include <ESP8266HTTPClient.h>
 #include "src/secrets/secrets.h"
 
-WiFiServer server(80);
-String header;
-String output5State = "off";
-String output4State = "off";
+bool aboveLevel = false;
+int level = 300;
+int count = 0;
 
-String baseUrl = "http://192.168.0.27:5000/api/counter/inc";
+int PIN_INFO = D5;
+int PIN_ON = D1;
+int PIN_ERROR = D0; 
+
+HTTPClient http;
+String baseUrl = "http://192.168.0.27:5000/api/counter";
 
 void setup() {
-    // put your setup code here, to run once:
-    pinMode(D5, OUTPUT);
-    digitalWrite(D5, HIGH);
+    int timer = millis();
   
+    // setup outputs
+    pinMode(PIN_INFO, OUTPUT);
+    pinMode(PIN_ON, OUTPUT);
+    pinMode(PIN_ERROR, OUTPUT);
+
+    // turn on all outputs to signal initialization
+    digitalWrite(PIN_ON, HIGH);
+    digitalWrite(PIN_INFO, HIGH);
+    digitalWrite(PIN_ERROR, HIGH);
+    
     Serial.begin(115200);
-    Serial.println();
-  
+    Serial.println(millis()-timer);
+
+    connectToWiFi();
+    http.setReuse(true);
+    
+    Serial.println(millis()-timer);
+    
+    // turn off error and info to signal end of initialization
+    digitalWrite(PIN_ERROR, LOW);
+    digitalWrite(PIN_INFO, LOW);
+    Serial.println(millis()-timer);
+}
+
+void connectToWiFi() {
+    WiFi.disconnect();
     WiFi.begin(WLAN_NAME, WLAN_SECRET);
+    WiFi.setSleepMode(WIFI_NONE_SLEEP, 30000);
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
   
     Serial.print("Connecting");
     while (WiFi.status() != WL_CONNECTED)
@@ -26,126 +54,77 @@ void setup() {
       Serial.print(".");
     }
     Serial.println();
-  
-    Serial.print("Connected, IP address: ");
-    Serial.println(WiFi.localIP());
-    server.begin();
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    // runServer();
-    sendCountsToServer();
-}
-
-void sendCountsToServer() {
-  digitalWrite(D5, HIGH);
-  HTTPClient http;
-  http.begin(baseUrl);
-  int code = http.GET();
-  http.end();
-  digitalWrite(D5, LOW);
-  delay(1000);
-}
-
-void blink() {
-    digitalWrite(D5, LOW);
-    delay(100);
-    digitalWrite(D5, HIGH);
-    delay(200);
-}
-
-void runServer() {
-    WiFiClient client = server.available();
+  int v = analogRead(A0);
+  
+  // if voltage is below level, update state
+  if (v <= level) {
+    aboveLevel = false;
+  } else {
+    // voltage is above level
+    // if state is aboveLevel, we're still in a peak, so return
+    if (aboveLevel) return;
     
-    if (client) {
-      Serial.println("New Client.");
-      String currentLine = "";                // make a String to hold incoming data from the client
-      while (client.connected()) {            // loop while the client's connected
-        if (client.available()) {             // if there's bytes to read from the client,
-          char c = client.read();             // read a byte, then
-          Serial.write(c);                    // print it out the serial monitor
-          header += c;
-          if (c == '\n') {                    // if the byte is a newline character
-            // if the current line is blank, you got two newline characters in a row.
-            // that's the end of the client HTTP request, so send a response:
-            if (currentLine.length() == 0) {
-              // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-              // and a content-type so the client knows what's coming, then a blank line:
-              client.println("HTTP/1.1 200 OK");
-              client.println("Content-type:text/html");
-              client.println("Connection: close");
-              client.println();
-              
-              // turns the GPIOs on and off
-              if (header.indexOf("GET /5/on") >= 0) {
-                Serial.println("GPIO 5 on");
-                output5State = "on";
-                digitalWrite(D5, HIGH);
-              } else if (header.indexOf("GET /5/off") >= 0) {
-                Serial.println("GPIO 5 off");
-                output5State = "off";
-                digitalWrite(D5, LOW);
-              } else if (header.indexOf("GET /4/on") >= 0) {
-                Serial.println("GPIO 4 on");
-                output4State = "on";
-                digitalWrite(D4, HIGH);
-              } else if (header.indexOf("GET /4/off") >= 0) {
-                Serial.println("GPIO 4 off");
-                output4State = "off";
-                digitalWrite(D4, LOW);
-              }
-              
-              // Display the HTML web page
-              client.println("<!DOCTYPE html><html>");
-              client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-              client.println("<link rel=\"icon\" href=\"data:,\">");
-              // CSS to style the on/off buttons 
-              // Feel free to change the background-color and font-size attributes to fit your preferences
-              client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-              client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
-              client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-              client.println(".button2 {background-color: #77878A;}</style></head>");
-              
-              // Web Page Heading
-              client.println("<body><h1>ESP8266 Web Server</h1>");
-              
-              // Display current state, and ON/OFF buttons for GPIO 5  
-              client.println("<p>GPIO 5 - State " + output5State + "</p>");
-              // If the output5State is off, it displays the ON button       
-              if (output5State=="off") {
-                client.println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
-              } else {
-                client.println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
-              } 
-                 
-              // Display current state, and ON/OFF buttons for GPIO 4  
-              client.println("<p>GPIO 4 - State " + output4State + "</p>");
-              // If the output4State is off, it displays the ON button       
-              if (output4State=="off") {
-                client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
-              } else {
-                client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
-              }
-              client.println("</body></html>");
-              
-              // The HTTP response ends with another blank line
-              client.println();
-              // Break out of the while loop
-              break;
-            } else { // if you got a newline, then clear currentLine
-              currentLine = "";
-            }
-          } else if (c != '\r') {  // if you got anything else but a carriage return character,
-            currentLine += c;      // add it to the end of the currentLine
-          }
-        }
-      }
-      // Clear the header variable
-      header = "";
-      // Close the connection
-      client.stop();
-      Serial.println("Client disconnected.");
-      Serial.println("");
+    // This is a new peak, so send the info to the web server
+    aboveLevel = true;
+    count++;
+    Serial.println("new peak");
+  
+    sendCount(count);
+  }
+}
+
+void sendCount(int count) {
+  digitalWrite(PIN_INFO, HIGH);
+  int startMs = millis();
+
+  if (WiFi.isConnected()) {
+    Serial.println("connected.");
+  } else {
+    Serial.println("not connected.");
+    WiFi.reconnect();
+    while (!WiFi.isConnected()) {
+      Serial.print(".");
+      delay(100);
+    }
+    Serial.println("reconnected.");
+  }
+  
+  http.begin(baseUrl);
+  http.addHeader("Content-Type", "application/json");
+  char message[64];
+  sprintf(message, "{\"count\":%d}", count);
+  Serial.println(message);
+  int code = http.POST(message);
+  http.end();
+  if (code != 200) {
+    Serial.printf("HTTP POST failed. Return code=%d\n", code);
+    if (code > 0) {
+      // some kind of HTTP error
+      blink(1, PIN_ERROR);
+    } else {
+      // WiFi failed
+      blink(2, PIN_ERROR);
+    }
+  }
+  digitalWrite(PIN_INFO, LOW);
+  
+  Serial.printf("Send time in ms: %d\n", millis()-startMs );
+}
+
+/*
+ * Blinks the selected pin count times.
+ */
+void blink(int count, int pin) {
+    int state = digitalRead(pin);
+    
+    while (count > 0) {
+      count--;
+      digitalWrite(pin, !state);
+      delay(100);
+      digitalWrite(pin, state);
+      delay(100);
     }
 }
