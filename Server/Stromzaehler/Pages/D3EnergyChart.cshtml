@@ -1,0 +1,22 @@
+@page "{hours=5}"
+@model Stromzaehler.Pages.PowerChartModel
+@{
+    ViewData["Title"] = "Energy Chart of last " + RouteData.Values["hours"] + " hours";
+    if (!int.TryParse(RouteData.Values["hours"] as string, out var lastHours)) {
+        lastHours = 3;
+    }
+}
+
+<script src="~/lib/d3/d3.min.js"></script>
+
+<h1>@ViewData["Title"]</h1>
+
+<script>
+    var labels = 
+    d3.select("body")
+        .selectAll("p")
+        .data([1,2,3])
+        .enter()
+        .append("p").text(p => "Nr. " + p);
+</script>
+

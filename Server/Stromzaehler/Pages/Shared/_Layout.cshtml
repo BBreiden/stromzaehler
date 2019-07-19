@@ -31,6 +31,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/PowerChart">Power</a>
                         </li>
+                        <!-- Power Chart Menu -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" 
                                 role="button" 
@@ -45,6 +46,28 @@
                                 <a class="dropdown-item" href="/powerchart/12">Last 12 Hours</a>
                                 <a class="dropdown-item" href="/powerchart/24">Last 24 Hours</a>
                             </div>
+                        </li>
+
+                        <!-- Energy Chart Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" 
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false">
+                                Energy
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="/energychart/1">Last Hour</a>
+                                <a class="dropdown-item" href="/energychart/3">Last 3 Hours</a>
+                                <a class="dropdown-item" href="/energychart/12">Last 12 Hours</a>
+                                <a class="dropdown-item" href="/energychart/24">Last 24 Hours</a>
+                            </div>
+                        </li>
+
+                        <!-- D3 chart -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/D3EnergyChart">D3 Energy</a>
                         </li>
                     </ul>
                 </div>

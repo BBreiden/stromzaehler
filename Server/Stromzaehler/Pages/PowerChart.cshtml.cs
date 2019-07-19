@@ -27,13 +27,12 @@ namespace Stromzaehler.Pages
         public string GetLabels(int lastHours)
         {
             var labels = GetBlinks(lastHours)
-            //.TakeLast(count)
-            .Select(b => b.Timestamp.ToString("dd/MM HH:mm"))
-            .ToArray();
+                .Select(b => b.Timestamp.ToString("yyyy-MM-ddTHH:mm"))
+                .ToArray();
             return $"['{string.Join("','", labels)}']";
         }
 
-        public string GetData(int lastHours)
+        public string GetPowerDataRough(int lastHours)
         {
             var values = GetBlinks(lastHours)
                 // .TakeLast(count)
@@ -42,9 +41,27 @@ namespace Stromzaehler.Pages
             return $"[{string.Join(',', values)}]";
         }
 
+        public string GetPowerData(int lastHours)
+        {
+            var values = GetBlinks(lastHours)
+                .Diff((next, prev) =>
+                3600 * (next.Value - prev.Value) / (next.Timestamp - prev.Timestamp).TotalSeconds);
+            return $"[{string.Join(',', values)}]";
+        }
+
+        public string GetEnergyData(int lastHours)
+        {
+            var values = GetBlinks(lastHours)
+                .Select(e => e.Value / 1000.0);
+            return $"[{string.Join(',', values)}]";
+        }
+
         public IEnumerable<Blink> GetBlinks(int lastHours) {
-            return blinks.Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
-            .OrderBy(b => b.Timestamp);
+            var result = blinks.Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
+                .OrderBy(b => b.Timestamp)
+                .ToArray();
+            var skip = result.Length / 100;
+            return result.Where((e, i) => i % skip == 0);
         }
     }
 }

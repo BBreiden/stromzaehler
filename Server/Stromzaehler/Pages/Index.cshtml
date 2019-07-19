@@ -19,7 +19,7 @@
             @foreach (var d in Model.Database.Blinks.Take(20).OrderByDescending(b => b.Timestamp))
             {
                 <tr>
-                    <td>@d.Timestamp.ToString("yyyy-MM-ddThh:mm:ss,f")</td>
+                    <td>@d.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss,f")</td>
                     <td>@d.Value</td>
                 </tr>
             }

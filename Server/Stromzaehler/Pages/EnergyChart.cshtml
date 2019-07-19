@@ -1,7 +1,7 @@
-﻿@page "{hours=3}"
+@page "{hours=3}"
 @model Stromzaehler.Pages.PowerChartModel
 @{
-    ViewData["Title"] = "Power Chart of last " + RouteData.Values["hours"] + " hours";
+    ViewData["Title"] = "Energy Chart of last " + RouteData.Values["hours"] + " hours";
     if (!int.TryParse(RouteData.Values["hours"] as string, out var lastHours)) {
         lastHours = 3;
     }
@@ -20,28 +20,22 @@
             data: {
                 labels: @Html.Raw(Model.GetLabels(lastHours)),
                 datasets: [{
-                    data: @Model.GetPowerData(lastHours),
-                    label: "Power",
+                    data: @Model.GetEnergyData(lastHours),
+                    label: "Energy",
                     borderColor: "#3e95cd",
                     fill: true
                 }
                 ]
             },
             options: {
-                elements: {
-                    line: {
-                        tension: 0
-                    }
-                },
                 title: {
                     display: true,
-                    text: 'Power by time'
+                    text: 'Energy by time'
                 },
                 scales: {
                     yAxes: [{
                         ticks: {
-                            min: 0,
-                            stepSize: 150
+                            stepSize: 0.5
                         }
                     }],
                     xAxes: [{
