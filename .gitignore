@@ -12,3 +12,4 @@ Server/.vs
 .vscode/launch.json
 /**/secrets.h
 .vscode/c_cpp_properties.json
+Server/Stromzaehler/BlinkData.db

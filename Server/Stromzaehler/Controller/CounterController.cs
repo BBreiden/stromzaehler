@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
 
@@ -39,6 +40,7 @@ namespace Stromzaehler.Controller
             await blinkData.SaveChangesAsync();
         }
 
+        
         public class PostData
         {
             public int Count { get; set; }

@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stromzaehler", "Stromzaehler\Stromzaehler.csproj", "{777DA44F-2D5A-4346-ACF9-4B3106348F8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{28A0BAE7-C9F1-4B1E-A99C-24A2157A276A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{777DA44F-2D5A-4346-ACF9-4B3106348F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{777DA44F-2D5A-4346-ACF9-4B3106348F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{777DA44F-2D5A-4346-ACF9-4B3106348F8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28A0BAE7-C9F1-4B1E-A99C-24A2157A276A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28A0BAE7-C9F1-4B1E-A99C-24A2157A276A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28A0BAE7-C9F1-4B1E-A99C-24A2157A276A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28A0BAE7-C9F1-4B1E-A99C-24A2157A276A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
