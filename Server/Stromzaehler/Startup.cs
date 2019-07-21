@@ -45,7 +45,7 @@ namespace Stromzaehler
             }
             var dbPath = Path.Combine(dbLocation, "BlinkData.db");
             Log.LogInformation($"Using database {dbPath}");
-            services.AddDbContext<BlinkDataContext>(o => o.UseSqlite($"Filename=BlinkData.db"));
+            services.AddDbContext<BlinkDataContext>(o => o.UseSqlite($"Filename={dbPath}"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
