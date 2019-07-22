@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stromzaehler.Analysis;
 using Stromzaehler.Controller;
 using Stromzaehler.Models;
 using Xunit;
@@ -19,13 +20,21 @@ namespace Stromzaehler.Tests
         }
 
         [Fact]
+        public void Empty_list_works()
+        {
+            var data = new Blink[0];
+            var c = new BlinkAnalysis(new TestData(data));
+            Equal(0, c.FillGaps().Count());
+        }
+
+        [Fact]
         public void One_blink_is_not_changed()
         {
             var data = new[] 
             {
                 new Blink { Timestamp = DateTimeOffset.Now, Value = 1}
             };
-            var c = new AnalysisController(new TestData(data));
+            var c = new BlinkAnalysis(new TestData(data));
             Equal(1, c.FillGaps().Count());
         }
 
@@ -40,7 +49,7 @@ namespace Stromzaehler.Tests
             };
 
             output.WriteLine("Setup");
-            var filled = new AnalysisController(new TestData(data))
+            var filled = new BlinkAnalysis(new TestData(data))
                 .FillGaps()
                 .ToArray();
             output.WriteLine("Check");
@@ -68,7 +77,7 @@ namespace Stromzaehler.Tests
             }
 
             output.WriteLine("Run");
-            var filled = new AnalysisController(new TestData(data))
+            var filled = new BlinkAnalysis(new TestData(data))
                 .FillGaps()
                 .ToArray();
             foreach (var b in filled) 
