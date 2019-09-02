@@ -12,7 +12,7 @@ namespace Stromzaehler.Pages
     public class DailyConsumptionModel : PageModel
     {
         public BlinkDataContext BlinkData { get; }
-
+       
         public DailyConsumptionModel(BlinkDataContext blinkData)
         {
             BlinkData = blinkData ?? throw new ArgumentNullException(nameof(blinkData));
@@ -31,7 +31,7 @@ namespace Stromzaehler.Pages
         /// </summary>
         public string GetEnergyData(int lastDays)
         {
-            var values = GetBlinks(lastDays)
+            var values = GetBlinks(lastDays+1)
                 .Diff((a, b) => b.Value - a.Value);
             return $"[{string.Join(',', values)}]";
         }
@@ -39,7 +39,7 @@ namespace Stromzaehler.Pages
         private IEnumerable<Blink> GetBlinks(int lastDays)
         {
             return BlinkData.Blinks
-                .Where(b => b.Timestamp > DateTimeOffset.Now.AddDays(-lastDays - 1))
+                .Where(b => b.Timestamp > DateTimeOffset.Now.AddDays(-lastDays))
                 .GroupBy(b => b.Timestamp.Date)
                 .Select(g => g.OrderBy(b => b.Timestamp).Last());
         }
