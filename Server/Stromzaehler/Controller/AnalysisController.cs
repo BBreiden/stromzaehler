@@ -21,10 +21,10 @@ namespace Stromzaehler.Controller
 
         public IBlinkData Data { get; }
 
-        [HttpGet]
-        public IEnumerable<Blink> GetFilled() 
-        {
-            return new BlinkAnalysis(Data).FillGaps().ToArray();       
-        }
+        //[HttpGet]
+        //public IEnumerable<Blink> GetFilled() 
+        //{
+        //    new BlinkAnalysis(Data).FillGaps().ToArray();       
+        //}
     }
 }

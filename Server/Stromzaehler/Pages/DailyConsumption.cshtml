@@ -1,0 +1,63 @@
+﻿@page "{days=20}"
+@model Stromzaehler.Pages.DailyConsumptionModel
+@{
+    ViewData["Title"] = "Daily Energy Consumption of last " + RouteData.Values["days"] + " days";
+    if (!int.TryParse(RouteData.Values["days"] as string, out var lastDays))
+    {
+        lastDays = 20;
+    }
+}
+
+<script src="~/lib/chartjs/dist/Chart.bundle.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<h1>@ViewData["Title"]</h1>
+<canvas id="chart" style="width:100%; height:500px"></canvas>
+
+<script type="text/javascript">
+    (function () {
+        new Chart(document.getElementById("chart"), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Model.GetLabels(lastDays)),
+                datasets: [{
+                    data: @Model.GetEnergyData(lastDays),
+                    label: "Power",
+                    borderColor: "#3e95cd",
+                    fill: true,
+                    backgroundColor: "rgba(255, 0, 0, 0.3)",
+                    borderColor: "rgba(255, 0, 0, 0.7)",
+                    borderWidth: 1,
+                    hoverBackgroundColor: "rgba(255, 0, 0, 1)",
+                    
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        tension: 0
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Power by time'
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            stepSize: 1000
+                        }
+                    }],
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            minUnit: 'day'
+                        }
+                    }]
+                }
+            }
+        });
+
+    })();
+</script>
