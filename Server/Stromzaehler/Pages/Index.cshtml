@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var d in Model.Database.Blinks.Take(20).OrderByDescending(b => b.Timestamp))
+            @foreach (var d in Model.Database.Blinks.OrderByDescending(b => b.Value).Take(20))
             {
                 <tr>
                     <td>@d.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss,f")</td>

@@ -89,7 +89,8 @@ namespace Stromzaehler.Pages
         /// <returns></returns>
         public IQueryable<Blink> GetBlinks(int lastHours) {
             var result = blinks
-                .Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
+                .FromSql($"select * from blinks where datetime(timestamp) > datetime({DateTimeOffset.Now.AddHours(-lastHours)})")
+                //.Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
                 .OrderBy(b => b.Timestamp);
             return result;
         }
