@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MathNet.Numerics.Statistics;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
 using Stromzaehler.Tools;
 
@@ -14,10 +15,13 @@ namespace Stromzaehler.Pages
     {
         private IQueryable<Blink> blinks;
         private readonly BlinkDataContext db;
+        private readonly ILogger<PowerChartModel> log;
 
-        public PowerChartModel(BlinkDataContext db)
+        public PowerChartModel(BlinkDataContext db, ILogger<PowerChartModel> log)
         {
             this.db = db ?? throw new ArgumentNullException(nameof(db));
+            this.log = log;
+            log.LogInformation("PowerChartModel initialized.");
         }
 
         public async Task OnGetAsync()
@@ -27,10 +31,13 @@ namespace Stromzaehler.Pages
 
         public string GetLabels(int lastHours)
         {
+            log.LogTrace("Getting labels");
             var labels = GetBlinksSkipped(lastHours)
                 .Select(b => b.Timestamp.ToString("yyyy-MM-ddTHH:mm"))
                 .ToArray();
-            return $"['{string.Join("','", labels)}']";
+            var result = $"['{string.Join("','", labels)}']";
+            log.LogTrace("Got labels:" + result.Length);
+            return result;
         }
 
         public string GetPowerDataRough(int lastHours)
@@ -44,10 +51,13 @@ namespace Stromzaehler.Pages
 
         public string GetPowerData(int lastHours)
         {
+            log.LogTrace("Getting power data.");
             var values = GetBlinksSkipped(lastHours)
                 .Diff((next, prev) =>
                 3600 * (next.Value - prev.Value) / (next.Timestamp - prev.Timestamp).TotalSeconds);
-            return $"[{string.Join(',', values)}]";
+            var result = $"[{string.Join(',', values)}]";
+            log.LogTrace("Got power data: " + result.Length);
+            return result;
         }
 
         public string GetEnergyData(int lastHours)
