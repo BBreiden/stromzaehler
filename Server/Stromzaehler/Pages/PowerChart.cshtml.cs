@@ -14,6 +14,8 @@ namespace Stromzaehler.Pages
     public class PowerChartModel : PageModel
     {
         private IQueryable<Blink> blinks;
+        private IReadOnlyCollection<Blink> blinksLoaded;
+        private List<Blink> blinksLoadedAll;
         private readonly BlinkDataContext db;
         private readonly ILogger<PowerChartModel> log;
 
@@ -29,10 +31,15 @@ namespace Stromzaehler.Pages
             blinks = db.Blinks.AsNoTracking();
         }
 
-        public string GetLabels(int lastHours)
+        public void LoadBlinks(int lastHours)
+        {
+            blinksLoaded = GetBlinksSkipped(lastHours);
+        }
+
+        public string GetLabels()
         {
             log.LogTrace("Getting labels");
-            var labels = GetBlinksSkipped(lastHours)
+            var labels = blinksLoaded
                 .Select(b => b.Timestamp.ToString("yyyy-MM-ddTHH:mm"))
                 .ToArray();
             var result = $"['{string.Join("','", labels)}']";
@@ -49,10 +56,10 @@ namespace Stromzaehler.Pages
             return $"[{string.Join(',', values)}]";
         }
 
-        public string GetPowerData(int lastHours)
+        public string GetPowerData()
         {
             log.LogTrace("Getting power data.");
-            var values = GetBlinksSkipped(lastHours)
+            var values = blinksLoaded
                 .Diff((next, prev) =>
                 3600 * (next.Value - prev.Value) / (next.Timestamp - prev.Timestamp).TotalSeconds);
             var result = $"[{string.Join(',', values)}]";
@@ -60,20 +67,20 @@ namespace Stromzaehler.Pages
             return result;
         }
 
-        public string GetEnergyData(int lastHours)
+        public string GetEnergyData()
         {
-            var values = GetBlinksSkipped(lastHours)
+            var values = blinksLoaded
                 .Select(e => e.Value / 1000.0);
             return $"[{string.Join(',', values)}]";
         }
 
-        public string GetEnergyDataAsHistogram(int lastHours) {
-            var result = GetHistogram(lastHours);
+        public string GetEnergyDataAsHistogram() {
+            var result = GetHistogram();
             return $"[{string.Join(',', result.Select(d => d.Item2))}]";
         }
 
-        public IEnumerable<(DateTimeOffset, double)> GetHistogram(int lastHours) {
-            var allBlinks = GetBlinks(lastHours);
+        public IEnumerable<(DateTimeOffset, double)> GetHistogram() {
+            var allBlinks = blinksLoadedAll;
             var hist = new Histogram(allBlinks
                 .Select(b => (double)b.Timestamp.Ticks), 100);
             var offset = allBlinks.First().Timestamp.Offset;
@@ -87,9 +94,9 @@ namespace Stromzaehler.Pages
         /// Returns 100 blinks taken from the blinks of the lastHours
         /// </summary>
         public IReadOnlyCollection<Blink> GetBlinksSkipped(int lastHours) {
-            var result = GetBlinks(lastHours).ToList();
-            var skip = result.Count / 100;
-            return result.Where((e, i) => i % skip == 0).ToList();
+            blinksLoadedAll = GetBlinks(lastHours).ToList();
+            var skip = blinksLoadedAll.Count / 100;
+            return blinksLoadedAll.Where((e, i) => i % skip == 0).ToList();
         }
 
         /// <summary>

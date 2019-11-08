@@ -5,6 +5,7 @@
     if (!int.TryParse(RouteData.Values["hours"] as string, out var lastHours)) {
         lastHours = 3;
     }
+    Model.LoadBlinks(lastHours);
 }
 
 <script src="~/lib/chartjs/dist/Chart.bundle.min.js"></script>
@@ -18,9 +19,9 @@
         new Chart(document.getElementById("chart"), {
             type: 'line',
             data: {
-                labels: @Html.Raw(Model.GetLabels(lastHours)),
+                labels: @Html.Raw(Model.GetLabels()),
                 datasets: [{
-                    data: @Model.GetPowerData(lastHours),
+                    data: @Model.GetPowerData(),
                     label: "Power",
                     borderColor: "#3e95cd",
                     fill: true
