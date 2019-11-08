@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
 
@@ -26,14 +27,16 @@ namespace Stromzaehler
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddRazorPages();
 
             //services.AddDbContext<BlinkDataContext>(options => options.UseInMemoryDatabase());
             var dbLocation = Configuration.GetSection("Database:Path").Value;
-            if (string.IsNullOrEmpty(dbLocation)) {
+            if (string.IsNullOrEmpty(dbLocation))
+            {
                 throw new InvalidOperationException("Missing database path.");
             }
-            if (!Directory.Exists(dbLocation)) {
+            if (!Directory.Exists(dbLocation))
+            {
                 throw new InvalidOperationException($"Directory does not exist: {dbLocation}");
             }
             var dbPath = Path.Combine(dbLocation, "BlinkData.db");
@@ -45,7 +48,7 @@ namespace Stromzaehler
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -56,10 +59,15 @@ namespace Stromzaehler
                 app.UseExceptionHandler("/Error");
             }
 
-            
+
             app.UseStaticFiles();
-            
-            app.UseMvc();
+            app.UseRouting();
+
+            app.UseEndpoints(configure =>
+            {
+                configure.MapControllers();
+                configure.MapRazorPages();
+            });
         }
     }
 }
