@@ -11,6 +11,12 @@ namespace Stromzaehler.Models
             Database.EnsureCreated();
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<Blink>()
+                .HasIndex(b => new { b.Timestamp, b.Source });
+        }
+
         public DbSet<Blink> Blinks { get; set; }
 
         IQueryable<Blink> IBlinkData.Blinks => Blinks;

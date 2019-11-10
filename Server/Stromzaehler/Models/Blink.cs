@@ -2,6 +2,11 @@
 
 namespace Stromzaehler.Models
 {
+    public enum Source
+    {
+        None = 0, Power = 1, Water = 2
+    }
+
     public class Blink : IEquatable<Blink>
     {
         public Blink()
@@ -11,9 +16,12 @@ namespace Stromzaehler.Models
         public long BlinkId { get; set; }
         public DateTimeOffset Timestamp { get; set; }
         public int Value { get; set; }
+        public Source Source { get; set; }
 
-        public static bool operator==(Blink a, Blink b) => a is null ? b is null : a.Equals(b);
-        public static bool operator!=(Blink a, Blink b) => !(a == b);
+        public static bool operator==(Blink a, Blink b) 
+            => a is null ? b is null : a.Equals(b);
+        public static bool operator!=(Blink a, Blink b) 
+            => !(a == b);
         
         public bool Equals(Blink other)
         {
@@ -21,7 +29,9 @@ namespace Stromzaehler.Models
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
-            return Timestamp == other.Timestamp && Value == other.Value;
+            return Timestamp == other.Timestamp 
+                && Value == other.Value
+                && Source == other.Source;
         }
 
         public override bool Equals(object obj) 
@@ -31,7 +41,7 @@ namespace Stromzaehler.Models
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Timestamp, Value);
+            return HashCode.Combine(Timestamp, Source, Value);
         }
 
         public override string ToString() {

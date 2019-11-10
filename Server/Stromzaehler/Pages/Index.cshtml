@@ -5,25 +5,40 @@
 }
 
 <div class="text-center">
-    <h1>academia test</h1>
-    @Model.Database.Blinks.Count();
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header bg-info">
+                    <h5 class="card-title">Total Counts</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle text-muted">Insgesamt gez&auml;hlte Blinks</h6>
+                    <p class="card-text">&#x23fb;  @Model.BlinkCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Current Consumption</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-subtitle text-muted">over the last @Model.GetPeriod()</p>
+                    <p class="card-text">@Model.CurrentConsumption W</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Last Value</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-subtitle text-muted">at @Model.LastBlinks.Timestamp</h6>
+                    <p class="card-text">@Model.LastBlinkCount</p>
+                </div>
+            </div>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>When</th>
-                <th>Count</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var d in Model.Database.Blinks.Take(20).OrderByDescending(b => b.Timestamp))
-            {
-                <tr>
-                    <td>@d.Timestamp.ToString("yyyy-MM-ddTHH:mm:ss,f")</td>
-                    <td>@d.Value</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    
+    </div>
 </div>

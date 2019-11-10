@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Stromzaehler.Models;
 
-namespace Stromzaehler.Controller
+namespace Stromzaehler.Models
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CounterController : ControllerBase
+    public partial class CounterController : ControllerBase
     {
         private readonly ILogger<CounterController> log;
         private readonly BlinkDataContext blinkData;
@@ -29,21 +27,32 @@ namespace Stromzaehler.Controller
         }
 
         [HttpPost()]
-        public async Task PostAsync([FromBody] PostData data)
+        public async Task<IActionResult> PostAsync([FromBody] PostData data)
         {
             if (!ModelState.IsValid)
             {
                 throw new ArgumentException("Invalid model.");
             }
 
-            blinkData.Blinks.Add(new Blink() { Value = data.Count, Timestamp = DateTimeOffset.Now });
-            await blinkData.SaveChangesAsync();
-        }
+            var blink = new Blink()
+            {
+                Source = data.Source,
+                Timestamp = DateTimeOffset.Now,
+                Value = data.Count
+            };
 
-        
-        public class PostData
-        {
-            public int Count { get; set; }
+            switch (blink.Source)
+            {
+                case Source.Power:
+                case Source.Water:
+                    blinkData.Blinks.Add(blink);
+                    break;
+                default:
+                    return BadRequest($"Invalid data source type: {data.SourceString ?? "<null>"}");
+            }
+            
+            await blinkData.SaveChangesAsync();
+            return Ok();
         }
     }
 }
