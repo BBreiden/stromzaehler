@@ -10,19 +10,19 @@
 bool alreadyAboveLevel = false;
 int level = 500;
 int count = 0;
-int blinkCount = 10;
-int blinkOn = false;
 int PIN_INFO = D4;
+int ledOn = LOW;    // don't ask me why, but they are inverted on this board
+int ledOff = HIGH;
 
 void setup() {
       int timer = millis();
       
       // setup output
       pinMode(PIN_INFO, OUTPUT);
-
+      
       // signal setup
-      digitalWrite(PIN_INFO, HIGH);
-
+      digitalWrite(PIN_INFO, ledOn);
+      
       Serial.begin(115200);
       Serial.println(millis() - timer);
       Serial.println("starting.");
@@ -37,7 +37,7 @@ void setup() {
       // signal setup done
       Serial.println(millis() - timer);
       Serial.println("setup done."); 
-      digitalWrite(PIN_INFO, LOW);
+      digitalWrite(PIN_INFO, ledOff);
 }
 
 void loop() {
@@ -46,28 +46,33 @@ void loop() {
     bool aboveLevel = voltage > level;
     if (aboveLevel && !alreadyAboveLevel) {
       // we just crossed the threshold
+      digitalWrite(PIN_INFO, ledOn);
       count++;
       Serial.println(count);
-      sendWaterCount(count); 
+      int res = sendWaterCount(count); 
+      if (res != 200) {
+        if (res > 0) {
+          blink(2);
+        } else {
+          blink(5);
+        }
+      }
     }
+    digitalWrite(PIN_INFO, ledOff);
 
     alreadyAboveLevel = aboveLevel;
-
-    blink();
     delay(100);
 }
 
-void blink() {
-  if (blinkCount == 0) {
-      blinkCount = 10;
+void blink(int count) {
 
-      if (blinkOn) {
-        digitalWrite(PIN_INFO, LOW);
-      } else {
-        digitalWrite(PIN_INFO, HIGH);
-      }
-      blinkOn = !blinkOn;
-    } else {
-      blinkCount--;
-    }
+  while (count > 0) {
+    digitalWrite(PIN_INFO, ledOff);
+    delay(100);
+    digitalWrite(PIN_INFO, ledOn);
+    delay(300);
+    count--;
+  }
+
+  digitalWrite(PIN_INFO, ledOff);
 }
