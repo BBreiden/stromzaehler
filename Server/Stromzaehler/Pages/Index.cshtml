@@ -4,41 +4,92 @@
     ViewData["Title"] = "academia";
 }
 
-<div class="text-center">
-    <div class="row">
-        <div class="col-sm-4">
-            <div class="card">
-                <div class="card-header bg-info">
-                    <h5 class="card-title">Total Counts</h5>
-                </div>
-                <div class="card-body">
-                    <h6 class="card-subtitle text-muted">Insgesamt gez&auml;hlte Blinks</h6>
-                    <p class="card-text">&#x23fb;  @Model.BlinkCount</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Current Consumption</h5>
-                </div>
-                <div class="card-body">
-                    <p class="card-subtitle text-muted">over the last @Model.GetPeriod()</p>
-                    <p class="card-text">@Model.CurrentConsumption W</p>
+
+    <div class="text-center">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h5 class="card-title">Total Counts</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-subtitle text-muted">Insgesamt gez&auml;hlte Blinks</h6>
+                        <p class="card-text">@Model.BlinkCount</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Last Value</h5>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Current Consumption</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-subtitle text-muted">over the last @Model.GetPeriod()</p>
+                        <p class="card-text">@Model.CurrentConsumption W</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h6 class="card-subtitle text-muted">at @Model.LastBlinks.Timestamp</h6>
-                    <p class="card-text">@Model.LastBlinkCount</p>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            Last Value
+                            @if ((DateTimeOffset.Now - Model.LastBlinks.Timestamp).TotalSeconds > 300)
+                            {
+                                <span class="badge badge-warning">Outdated</span>
+                            }
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-subtitle text-muted">at @Model.LastBlinks.Timestamp</h6>
+                        <p class="card-text">@Model.LastBlinkCount</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h5 class="card-title">Year To Date</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">@Model.YearToDate.ToString("##,0") kWh</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h5 class="card-title">Month To Date</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">@Model.MonthToDate.ToString("##,0") kWh</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card">
+                    <div class="card-header bg-secondary">
+                        <h5 class="card-title">Week To Date</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">@Model.WeekToDate.ToString("##,0") kWh</p>
+                    </div>
                 </div>
             </div>
         </div>
 
+        @Model.DailyAverage
+
+        <table>
+            <thead>
+                <tr><td>Week Day</td><td>Average [kWh]</td></tr>
+            </thead>
+            @foreach(var line in Model.WeekDayAverages.OrderBy(i => i.Key))
+            {
+                <tr><td>@line.Key</td><td>@((line.Item2/1000).ToString("0.0"))</td></tr>
+            }
+        </table>
     </div>
-</div>
