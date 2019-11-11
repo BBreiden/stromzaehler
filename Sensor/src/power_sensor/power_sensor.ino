@@ -1,6 +1,11 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include "src/secrets/secrets.h"
+// 
+// Power sensor
+//
+// Counts LED blinks produced by the power meter and reports them to a web service
+//
+// compile for board NodeMCU 1.0 (otherwise pins might not be defined)
+
+#include "webapi/webapi.h"
 
 bool aboveLevel = false;
 int level = 300;
@@ -9,9 +14,6 @@ int count = 0;
 int PIN_INFO = D5;
 int PIN_ON = D1;
 int PIN_ERROR = D0; 
-
-HTTPClient http;
-String baseUrl = "http://192.168.0.27:5000/api/counter";
 
 void setup() {
     int timer = millis();
@@ -40,22 +42,6 @@ void setup() {
     Serial.println(millis()-timer);
 }
 
-void connectToWiFi() {
-    WiFi.disconnect();
-    WiFi.begin(WLAN_NAME, WLAN_SECRET);
-    WiFi.setSleepMode(WIFI_NONE_SLEEP, 30000);
-    WiFi.mode(WIFI_STA);
-    WiFi.setAutoReconnect(true);
-  
-    Serial.print("Connecting");
-    while (WiFi.status() != WL_CONNECTED)
-    {
-      delay(500);
-      Serial.print(".");
-    }
-    Serial.println();
-}
-
 void loop() {
   int v = analogRead(A0);
   
@@ -80,28 +66,10 @@ void sendCount(int count) {
   digitalWrite(PIN_INFO, HIGH);
   int startMs = millis();
 
-  if (WiFi.isConnected()) {
-    Serial.println("connected.");
-  } else {
-    Serial.println("not connected.");
-    WiFi.reconnect();
-    while (!WiFi.isConnected()) {
-      Serial.print(".");
-      delay(100);
-    }
-    Serial.println("reconnected.");
-  }
-  
-  http.begin(baseUrl);
-  http.addHeader("Content-Type", "application/json");
-  char message[64];
-  sprintf(message, "{\"count\":%d}", count);
-  Serial.println(message);
-  int code = http.POST(message);
-  http.end();
-  if (code != 200) {
-    Serial.printf("HTTP POST failed. Return code=%d\n", code);
-    if (code > 0) {
+  int res = sendPowerCount(count);
+  if (res != 200) {
+    Serial.printf("HTTP POST failed. Return code=%d\n", res);
+    if (res > 0) {
       // some kind of HTTP error
       blink(1, PIN_ERROR);
     } else {
@@ -109,6 +77,7 @@ void sendCount(int count) {
       blink(2, PIN_ERROR);
     }
   }
+  
   digitalWrite(PIN_INFO, LOW);
   
   Serial.printf("Send time in ms: %d\n", millis()-startMs );

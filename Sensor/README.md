@@ -1,3 +1,3 @@
 # Sensor
 
-Sensor contains the sketch to program the ESP.
+Sensor contains the sketches to program the ESP.
