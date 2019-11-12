@@ -1,5 +1,6 @@
 ﻿@page
 @model IndexModel
+@using Models
 @{
     ViewData["Title"] = "academia";
 }
@@ -13,7 +14,7 @@
                         <h5 class="card-title">Total Counts</h5>
                     </div>
                     <div class="card-body">
-                        <h6 class="card-subtitle text-muted">Insgesamt gez&auml;hlte Blinks</h6>
+                        <h6 class="card-subtitle text-muted">Overall number of data points</h6>
                         <p class="card-text">@Model.BlinkCount</p>
                     </div>
                 </div>
@@ -21,11 +22,11 @@
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title">Current Consumption</h5>
+                        <h5 class="card-title">Power Consumption</h5>
                     </div>
                     <div class="card-body">
                         <p class="card-subtitle text-muted">over the last @Model.GetPeriod()</p>
-                        <p class="card-text">@Model.CurrentConsumption W</p>
+                        <p class="card-text">@Model.CurrentPowerConsumption W</p>
                     </div>
                 </div>
             </div>
@@ -34,15 +35,22 @@
                     <div class="card-header">
                         <h5 class="card-title">
                             Last Value
-                            @if ((DateTimeOffset.Now - Model.LastBlinks.Timestamp).TotalSeconds > 300)
-                            {
-                                <span class="badge badge-warning">Outdated</span>
-                            }
                         </h5>
                     </div>
                     <div class="card-body">
-                        <h6 class="card-subtitle text-muted">at @Model.LastBlinks.Timestamp</h6>
-                        <p class="card-text">@Model.LastBlinkCount</p>
+                        <p class="card-text">Power @Model.LastBlinks[Source.Power].Value 
+                            @if ((DateTimeOffset.Now - Model.LastBlinks[Source.Power].Timestamp).TotalMinutes > 5)
+                            {
+                                <span class="badge badge-warning">Old</span>
+                            }
+                        </p>
+                        <p class="card-text">
+                            Water @Model.LastBlinks[Source.Water].Value
+                            @if ((DateTimeOffset.Now - Model.LastBlinks[Source.Water].Timestamp).TotalMinutes > 5)
+                            {
+                                <span class="badge badge-warning">Old</span>
+                            }
+                        </p>
                     </div>
                 </div>
             </div>
@@ -52,36 +60,28 @@
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-header bg-info">
-                        <h5 class="card-title">Year To Date</h5>
+                        <h5 class="card-title">Power</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">@Model.YearToDate.ToString("##,0") kWh</p>
+                        <p class="card-text">Week @((Model.PeriodConsumption[Source.Power].WeekToDate/1000.0).ToString("##,0")) kWh</p>
+                        <p class="card-text">Month @((Model.PeriodConsumption[Source.Power].MonthToDate/1000.0).ToString("##,0")) kWh</p>
+                        <p class="card-text">Year-to-date @((Model.PeriodConsumption[Source.Power].YearToDate/1000.0).ToString("##,0")) kWh</p>
                     </div>
                 </div>
             </div>
             <div class="col-sm-4">
                 <div class="card">
                     <div class="card-header bg-info">
-                        <h5 class="card-title">Month To Date</h5>
+                        <h5 class="card-title">Water</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">@Model.MonthToDate.ToString("##,0") kWh</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="card">
-                    <div class="card-header bg-secondary">
-                        <h5 class="card-title">Week To Date</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">@Model.WeekToDate.ToString("##,0") kWh</p>
+                        <p class="card-text">Week: @Model.PeriodConsumption[Source.Water].WeekToDate.ToString("##,0") l</p>
+                        <p class="card-text">Month: @Model.PeriodConsumption[Source.Water].MonthToDate.ToString("##,0") l</p>
+                        <p class="card-text">Date: @Model.PeriodConsumption[Source.Water].YearToDate.ToString("##,0") l</p>
                     </div>
                 </div>
             </div>
         </div>
-
-        @Model.DailyAverage
 
         <table>
             <thead>

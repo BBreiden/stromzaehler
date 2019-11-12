@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -25,18 +26,26 @@ namespace Stromzaehler.Pages
                 .OrderByDescending(b => b.Timestamp)
                 .ToArray();
 
-            LastBlinks = thisYear[0];
-            LastBlinkCount = LastBlinks.Value.ToString("##,#");
+            LastBlinks = thisYear.GroupBy(b => b.Source).ToDictionary(g => g.Key, g => g.First());
 
-            AveragePeriod = (thisYear[0].Timestamp - thisYear[n - 1].Timestamp);
-            var power = (thisYear[0].Value - thisYear[n - 1].Value) / AveragePeriod.TotalHours;
-            CurrentConsumption = power.ToString("0.0");
+            var powerBlinks = thisYear.Where(b => b.Source == Source.Power).ToArray();
+            AveragePeriod = (powerBlinks[0].Timestamp - powerBlinks[n - 1].Timestamp);
+            var power = (powerBlinks[0].Value - powerBlinks[n - 1].Value) / AveragePeriod.TotalHours;
+            CurrentPowerConsumption = power.ToString("0.0");
 
-            var firstBlink = thisYear[thisYear.Length - 1];
-            YearToDate = (thisYear[0].Value - firstBlink.Value) / 1000;
-            MonthToDate = (thisYear[0].Value
-                - (thisYear.FirstOrDefault(b => b.Timestamp.Month != now.Month) ?? firstBlink).Value) / 1000;
-            WeekToDate = (thisYear[0].Value - thisYear.First(b => b.Timestamp < now.StartOfWeek()).Value) / 1000;
+            PeriodConsumption = thisYear.GroupBy(b => b.Source)
+                .Select(g =>
+                {
+                    var @default = g.Last();
+                    var firstOfYear = g.FirstOrDefault(b => b.Timestamp.Year == now.Year - 1) ?? @default;
+                    var firstOfMonth = g.FirstOrDefault(b => b.Timestamp.Month != now.Month) ?? @default;
+                    var firstOfWeek = g.FirstOrDefault(b => b.Timestamp < now.StartOfWeek()) ?? @default;
+                    var lastPoint = g.First();
+                    return (lastPoint.Source, YearToDate: (lastPoint.Value - firstOfYear.Value),
+                        MonthToDate: (lastPoint.Value - firstOfMonth.Value),
+                        WeekToDate: (lastPoint.Value - firstOfWeek.Value));
+                })
+                .ToDictionary(i => i.Source);
 
             DailyAverage = thisYear.GroupBy(b => b.Timestamp.Date)
                 .Select(g => g.First().Value - g.Last().Value)
@@ -49,11 +58,9 @@ namespace Stromzaehler.Pages
 
         public string BlinkCount { get; }
         public string LastBlinkCount { get; }
-        public Blink LastBlinks { get; }
-        public string CurrentConsumption { get; }
-        public int YearToDate { get; }
-        public int MonthToDate { get; }
-        public int WeekToDate { get; }
+        public IDictionary<Source, Blink> LastBlinks { get; }
+        public string CurrentPowerConsumption { get; }
+        public Dictionary<Source, (Source Source, int YearToDate, int MonthToDate, int WeekToDate)> PeriodConsumption { get; }
         public double DailyAverage { get; }
         public (DayOfWeek Key, double)[] WeekDayAverages { get; }
         public TimeSpan AveragePeriod { get; }
