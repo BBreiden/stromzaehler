@@ -12,18 +12,20 @@ namespace Stromzaehler.Models
     public partial class CounterController : ControllerBase
     {
         private readonly ILogger<CounterController> log;
-        private readonly BlinkDataContext blinkData;
+        private readonly BlinkDataContext blinkDb;
+        private readonly IBlinkData blinkData;
 
-        public CounterController(ILogger<CounterController> log, BlinkDataContext db)
+        public CounterController(ILogger<CounterController> log, BlinkDataContext db, IBlinkData blinkData)
         {
             this.log = log ?? throw new ArgumentNullException(nameof(log));
-            blinkData = db;
+            blinkDb = db;
+            this.blinkData = blinkData;
         }
 
         [HttpGet()]
         public IEnumerable<Blink> Get()
         {
-            return blinkData.Blinks.ToArray();
+            return blinkDb.Blinks.ToArray();
         }
 
         [HttpPost()]
@@ -34,6 +36,11 @@ namespace Stromzaehler.Models
                 throw new ArgumentException("Invalid model.");
             }
 
+            if (data.Source == Source.None)
+            {
+                return BadRequest("Invalid source: " + data.SourceString ?? "<null>");
+            }
+
             var blink = new Blink()
             {
                 Source = data.Source,
@@ -41,17 +48,12 @@ namespace Stromzaehler.Models
                 Value = data.Count
             };
 
-            switch (blink.Source)
-            {
-                case Source.Power:
-                case Source.Water:
-                    blinkData.Blinks.Add(blink);
-                    break;
-                default:
-                    return BadRequest($"Invalid data source type: {data.SourceString ?? "<null>"}");
-            }
-            
-            await blinkData.SaveChangesAsync();
+            // save to db
+            blinkDb.Blinks.Add(blink);
+            await blinkDb.SaveChangesAsync();
+
+            // update analysis
+            blinkData.Update(blink);
             return Ok();
         }
     }

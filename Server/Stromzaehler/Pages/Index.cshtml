@@ -82,14 +82,4 @@
                 </div>
             </div>
         </div>
-
-        <table>
-            <thead>
-                <tr><td>Week Day</td><td>Average [kWh]</td></tr>
-            </thead>
-            @foreach(var line in Model.WeekDayAverages.OrderBy(i => i.Key))
-            {
-                <tr><td>@line.Key</td><td>@((line.Item2/1000).ToString("0.0"))</td></tr>
-            }
-        </table>
     </div>

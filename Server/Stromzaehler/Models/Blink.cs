@@ -23,7 +23,7 @@ namespace Stromzaehler.Models
         public static bool operator!=(Blink a, Blink b) 
             => !(a == b);
         
-        public bool Equals(Blink other)
+        public bool Equals(Blink? other)
         {
             if (other is null)
                 return false;
@@ -34,7 +34,7 @@ namespace Stromzaehler.Models
                 && Source == other.Source;
         }
 
-        public override bool Equals(object obj) 
+        public override bool Equals(object? obj) 
         {
             return Equals(obj as Blink);
         }

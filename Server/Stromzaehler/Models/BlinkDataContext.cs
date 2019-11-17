@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Stromzaehler.Analysis;
 
 namespace Stromzaehler.Models
 {
-    public class BlinkDataContext : DbContext, IBlinkData 
+    public class BlinkDataContext : DbContext 
     {
         public BlinkDataContext(DbContextOptions<BlinkDataContext> options)
         : base(options)
@@ -19,11 +22,14 @@ namespace Stromzaehler.Models
 
         public DbSet<Blink> Blinks { get; set; }
 
-        IQueryable<Blink> IBlinkData.Blinks => Blinks;
     }
 
     public interface IBlinkData
     {
-        IQueryable<Blink> Blinks { get; }
+        int Count { get; }
+        IReadOnlyDictionary<Source, CountSeries> BySource { get; }
+        IReadOnlyDictionary<Source, double> Averages { get; }
+        (double Power, TimeSpan AveragingPeriod) GetCurrentPowerConsumption();
+        public void Update(Blink blink);
     }
 }

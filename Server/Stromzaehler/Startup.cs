@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Stromzaehler.Analysis;
 using Stromzaehler.Models;
 
 namespace Stromzaehler
@@ -41,8 +42,12 @@ namespace Stromzaehler
             Log.LogInformation($"Using database {dbPath}");
 
             services.AddDbContext<BlinkDataContext>(o => o.UseSqlite($"Filename={dbPath}"));
-
-            services.AddTransient<IBlinkData, BlinkDataContext>();
+            services.AddTransient<BlinkDataContext>();
+            services.AddSingleton<IBlinkData>(svp =>
+            {
+                var scope = svp.CreateScope();
+                return new BlinkAnalysis(scope.ServiceProvider.GetRequiredService<BlinkDataContext>());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -6,7 +6,7 @@ namespace Stromzaehler.Models
     public class PostData
     {
         // name of the sensor e.g. 'power', 'water'
-        public string SourceString { get; set; }
+        public string? SourceString { get; set; }
         public int Count { get; set; }
 
         public Source Source

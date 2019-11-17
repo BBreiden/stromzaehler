@@ -13,16 +13,17 @@ namespace Stromzaehler.Pages
     public class DailyConsumptionModel : PageModel
     {
         public BlinkDataContext BlinkData { get; }
-        public IEnumerable<Blink> Blinks { get; private set; }
+        private List<Blink> Blinks { get; }
 
         public DailyConsumptionModel(BlinkDataContext blinkData)
         {
             BlinkData = blinkData ?? throw new ArgumentNullException(nameof(blinkData));
+            Blinks = new List<Blink>();
         }
 
         public void LoadBlinks(int lastDays)
         {
-            Blinks = GetBlinks(lastDays);
+            Blinks.AddRange(GetBlinks(lastDays));
         }
 
         public string GetLabels(int lastDays)

@@ -1,58 +1,66 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Stromzaehler.Models;
+using Stromzaehler.Tools;
 
-namespace Stromzaehler.Analysis 
+namespace Stromzaehler.Analysis
 {
-    public class BlinkAnalysis
+    public class BlinkAnalysis : IBlinkData
     {
-        public BlinkAnalysis(IBlinkData blinkData)
+        public BlinkAnalysis(BlinkDataContext blinkData)
         {
-            BlinkData = blinkData;
+            // get all blinks from database
+            var blinks = blinkData.Blinks.AsNoTracking()
+                .OrderBy(b => b.Timestamp)
+                .ToList();
+            Count = blinks.Count;
+
+            var grouped = blinks.GroupBy(b => b.Source)
+                .ToDictionary(b => b.Key, b => b.ToList());
+            BySource = CleanupHistory(grouped);
+
+            Averages = BySource.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.AverageDailyBlinkCount());
         }
 
-        public IBlinkData BlinkData { get; }
+        // Group by source and make history monotonous growing.
+        // The sequence can be slightly unordered, e.g. 100, 101, 102, _90_, 103.
+        // The value 90 is probably just out of order and does not signal a reset
+        // of the counter. Therefore it can be ignored.
+        //
+        // Assumes the Blink list are sorted chronologically.
+        internal Dictionary<Source, CountSeries> CleanupHistory(Dictionary<Source, List<Blink>> grouped)
+        {
+            var result = new Dictionary<Source, CountSeries>();
 
-        public IEnumerable<Blink> FillGaps() {
-            var blinks = BlinkData.Blinks.OrderBy(b => b.Timestamp).ToList();
-
-            if (!blinks.Any())
+            foreach (var src in grouped.Keys)
             {
-                yield break;
+                var series = new CountSeries();
+                foreach (var blink in grouped[src])
+                {
+                    series.Add(blink);
+                }
+                result[src] = series;
             }
 
-            // return first
-            var prev = blinks.First();
-            yield return prev;
+            return result;
+        }
 
-            foreach (var blink in BlinkData.Blinks.Skip(1)) 
-            {
-                var gap = blink.Value - prev.Value;
-                if (gap <= 0)
-                    throw new InvalidOperationException("Gap must be positive.");
+        public int Count { get; private set; }
+        public IReadOnlyDictionary<Source, CountSeries> BySource { get; }
+        public IReadOnlyDictionary<Source, double> Averages { get; }
 
-                if (gap == 1) {
-                    prev = blink;
-                    yield return blink;
-                }
+        public (double Power, TimeSpan AveragingPeriod) GetCurrentPowerConsumption() 
+            => BySource[Source.Power].CurrentBlinksPerHour();
 
-                if (gap != 1) {
-                    var dt = (blink.Timestamp - prev.Timestamp) / gap;
+        public void Update(Blink blink)
+        {
+            // increase counter
+            Count++;
 
-                    if (dt.Ticks <= 0)
-                        throw new InvalidOperationException("Time gap must be positive.");
-                    
-                    var time = prev.Timestamp;
-                    var count = prev.Value;
-                    while (count < blink.Value) {
-                        time = time + dt;
-                        count++;
-                        yield return new Blink {Timestamp = time, Value = count};
-                    }
-                    prev = blink;
-                }
-            }
+            BySource[blink.Source].Add(blink);
+
         }
     }
 }

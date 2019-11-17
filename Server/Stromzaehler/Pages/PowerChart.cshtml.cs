@@ -13,15 +13,17 @@ namespace Stromzaehler.Pages
 {
     public class PowerChartModel : PageModel
     {
-        private IQueryable<Blink> blinks;
-        private IReadOnlyCollection<Blink> blinksLoaded;
-        private List<Blink> blinksLoadedAll;
+        private IQueryable<Blink>? blinks;
+        private readonly List<Blink> blinksLoaded;
+        private readonly List<Blink> blinksLoadedAll;
         private readonly BlinkDataContext db;
         private readonly ILogger<PowerChartModel> log;
 
         public PowerChartModel(BlinkDataContext db, ILogger<PowerChartModel> log)
         {
             this.db = db ?? throw new ArgumentNullException(nameof(db));
+            blinksLoaded = new List<Blink>();
+            blinksLoadedAll = new List<Blink>();
             this.log = log;
             log.LogInformation("PowerChartModel initialized.");
         }
@@ -33,7 +35,7 @@ namespace Stromzaehler.Pages
 
         public void LoadBlinks(int lastHours)
         {
-            blinksLoaded = GetBlinksSkipped(lastHours);
+            blinksLoaded.AddRange(GetBlinksSkipped(lastHours));
         }
 
         public string GetLabels()
@@ -74,27 +76,31 @@ namespace Stromzaehler.Pages
             return $"[{string.Join(',', values)}]";
         }
 
-        public string GetEnergyDataAsHistogram() {
+        public string GetEnergyDataAsHistogram()
+        {
             var result = GetHistogram();
             return $"[{string.Join(',', result.Select(d => d.Item2))}]";
         }
 
-        public IEnumerable<(DateTimeOffset, double)> GetHistogram() {
+        public IEnumerable<(DateTimeOffset, double)> GetHistogram()
+        {
             var allBlinks = blinksLoadedAll;
             var hist = new Histogram(allBlinks
                 .Select(b => (double)b.Timestamp.Ticks), 100);
             var offset = allBlinks.First().Timestamp.Offset;
-            for (var i = 0; i<hist.BucketCount; i++) {
+            for (var i = 0; i < hist.BucketCount; i++)
+            {
                 long x = (long)(hist[i].LowerBound + 0.5 * hist[i].Width);
-                yield return (new DateTimeOffset(x, offset), hist[i].Count); 
+                yield return (new DateTimeOffset(x, offset), hist[i].Count);
             }
         }
 
         /// <summary>
         /// Returns 100 blinks taken from the blinks of the lastHours
         /// </summary>
-        public IReadOnlyCollection<Blink> GetBlinksSkipped(int lastHours) {
-            blinksLoadedAll = GetBlinks(lastHours).ToList();
+        public IReadOnlyCollection<Blink> GetBlinksSkipped(int lastHours)
+        {
+            blinksLoadedAll.AddRange(GetBlinks(lastHours));
             var skip = blinksLoadedAll.Count / 100;
             return blinksLoadedAll.Where((e, i) => i % skip == 0).ToList();
         }
@@ -104,7 +110,8 @@ namespace Stromzaehler.Pages
         /// </summary>
         /// <param name="lastHours"></param>
         /// <returns></returns>
-        public IQueryable<Blink> GetBlinks(int lastHours) {
+        public IQueryable<Blink> GetBlinks(int lastHours)
+        {
             var from = DateTime.Now.AddHours(-lastHours);
             //var result = blinks
             //    .Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
