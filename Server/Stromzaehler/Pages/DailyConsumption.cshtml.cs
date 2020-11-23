@@ -47,7 +47,7 @@ namespace Stromzaehler.Pages
         private IEnumerable<Blink> GetBlinks(int lastDays)
         {
             return BlinkData.Blinks
-                .FromSql($"select * from Blinks where date(timestamp) > date({DateTimeOffset.Now.AddDays(-lastDays)})")
+                .FromSqlRaw($"select * from Blinks where date(timestamp) > date({DateTimeOffset.Now.AddDays(-lastDays)})")
                 //.Where(b => b.Timestamp > DateTimeOffset.Now.AddDays(-lastDays))
                 .GroupBy(b => b.Timestamp.Date)
                 .Select(g => g.OrderBy(b => b.Timestamp).Last());

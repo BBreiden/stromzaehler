@@ -117,7 +117,7 @@ namespace Stromzaehler.Pages
             //    .Where(b => b.Timestamp > DateTimeOffset.Now.AddHours(-lastHours))
             //    .OrderBy(b => b.Timestamp);
             var result = db.Blinks
-                .FromSql($"Select * from blinks where datetime(timestamp) > datetime({from})");
+                .FromSqlRaw($"Select * from blinks where datetime(timestamp) > datetime({from})");
             return result;
         }
     }
