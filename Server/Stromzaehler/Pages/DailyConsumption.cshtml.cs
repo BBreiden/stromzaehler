@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
 using Stromzaehler.Tools;
 
@@ -10,18 +9,27 @@ namespace Stromzaehler.Pages
 {
     public class DailyConsumptionModel : PageModel
     {
-        public BlinkDataContext BlinkData { get; }
+        private readonly IBlinkData bd;
+        private readonly ILogger<DailyConsumptionModel> log;
+
         private List<Blink> Blinks { get; }
 
-        public DailyConsumptionModel(BlinkDataContext blinkData)
+        public DailyConsumptionModel(IBlinkData bd, ILogger<DailyConsumptionModel> log)
         {
-            BlinkData = blinkData ?? throw new ArgumentNullException(nameof(blinkData));
+            this.bd = bd;
+            this.log = log;
             Blinks = new List<Blink>();
         }
 
         public void LoadBlinks(int lastDays)
         {
-            Blinks.AddRange(GetBlinks(lastDays));
+            var blinks = bd.BySource[Source.Power].All
+                .GroupBy(d => d.Timestamp.Date)
+                .OrderByDescending(g => g.Key)
+                .Take(lastDays)
+                .Select(g => g.OrderBy(b => b.Timestamp).Last());
+            Blinks.AddRange(blinks);
+            log.LogInformation($"Blinks read: {Blinks.Count}");
         }
 
         public string GetLabels(int lastDays)
@@ -29,6 +37,7 @@ namespace Stromzaehler.Pages
             var labels = Blinks
                 .Select(b => b.Timestamp.ToString("yyyy-MM-dd"))
                 .ToArray();
+
             return $"['{string.Join("','", labels)}']";
         }
 
@@ -40,15 +49,6 @@ namespace Stromzaehler.Pages
             var values = Blinks
                 .Diff((a, b) => b.Value - a.Value);
             return $"[{string.Join(',', values)}]";
-        }
-
-        private IEnumerable<Blink> GetBlinks(int lastDays)
-        {
-            return BlinkData.Blinks
-                .FromSqlRaw($"select * from Blinks where date(timestamp) > date({DateTimeOffset.Now.AddDays(-lastDays)})")
-                //.Where(b => b.Timestamp > DateTimeOffset.Now.AddDays(-lastDays))
-                .GroupBy(b => b.Timestamp.Date)
-                .Select(g => g.OrderBy(b => b.Timestamp).Last());
         }
     }
 }
