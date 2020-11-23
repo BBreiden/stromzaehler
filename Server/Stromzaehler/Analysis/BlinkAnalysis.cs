@@ -12,8 +12,9 @@ namespace Stromzaehler.Analysis
         public BlinkAnalysis(BlinkDataContext blinkData)
         {
             // get all blinks from database
-            var blinks = blinkData.Blinks.AsNoTracking()
-                .OrderBy(b => b.Timestamp)
+            var blinks = blinkData.Blinks
+                .FromSqlRaw($"select * from Blinks order by timestamp")
+                .AsNoTracking()
                 .ToList();
             Count = blinks.Count;
 
