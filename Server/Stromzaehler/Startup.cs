@@ -27,6 +27,7 @@ namespace Stromzaehler
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddSingleton<Status>(new Status(DateTime.Now, Configuration));
 
             //services.AddDbContext<BlinkDataContext>(options => options.UseInMemoryDatabase());
             var dbLocation = Configuration.GetSection("Database:Path").Value;

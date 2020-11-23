@@ -6,7 +6,6 @@ namespace Stromzaehler.Models
     {
         None = 0, Power = 1, Water = 2
     }
-
     public class Blink : IEquatable<Blink>
     {
         public Blink()
