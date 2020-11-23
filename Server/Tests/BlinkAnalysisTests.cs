@@ -1,9 +1,6 @@
 ﻿using Stromzaehler.Analysis;
 using Stromzaehler.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests

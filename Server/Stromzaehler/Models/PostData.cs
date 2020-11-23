@@ -1,5 +1,4 @@
 ﻿using System;
-using Stromzaehler.Models;
 
 namespace Stromzaehler.Models
 {
