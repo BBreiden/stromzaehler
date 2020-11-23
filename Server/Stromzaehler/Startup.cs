@@ -47,7 +47,10 @@ namespace Stromzaehler
             services.AddSingleton<IBlinkData>(svp =>
             {
                 var scope = svp.CreateScope();
-                return new BlinkAnalysis(scope.ServiceProvider.GetRequiredService<BlinkDataContext>());
+                return new BlinkAnalysis(
+                    scope.ServiceProvider.GetRequiredService<BlinkDataContext>(),
+                    scope.ServiceProvider.GetRequiredService<ILogger<BlinkAnalysis>>()
+                );
             });
         }
 

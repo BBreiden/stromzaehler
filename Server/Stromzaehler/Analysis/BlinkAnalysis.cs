@@ -2,21 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Stromzaehler.Models;
-using Stromzaehler.Tools;
 
 namespace Stromzaehler.Analysis
 {
     public class BlinkAnalysis : IBlinkData
     {
-        public BlinkAnalysis(BlinkDataContext blinkData)
+        public BlinkAnalysis(BlinkDataContext blinkData, ILogger<BlinkAnalysis> log)
         {
+            log.LogInformation("Loading data.");
             // get all blinks from database
             var blinks = blinkData.Blinks
-                .FromSqlRaw($"select * from Blinks order by timestamp")
                 .AsNoTracking()
+                .ToList()
+                .OrderBy(b => b.Timestamp)
                 .ToList();
             Count = blinks.Count;
+            log.LogInformation("Done loading data.");
 
             var grouped = blinks.GroupBy(b => b.Source)
                 .ToDictionary(b => b.Key, b => b.ToList());
