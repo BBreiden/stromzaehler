@@ -27,7 +27,8 @@ namespace Stromzaehler.Pages
                 .GroupBy(d => d.Timestamp.Date)
                 .OrderByDescending(g => g.Key)
                 .Take(lastDays)
-                .Select(g => g.OrderBy(b => b.Timestamp).Last());
+                .Select(g => g.OrderBy(b => b.Timestamp).Last())
+                .OrderBy(b => b.Timestamp);
             Blinks.AddRange(blinks);
             log.LogInformation($"Blinks read: {Blinks.Count}");
         }
