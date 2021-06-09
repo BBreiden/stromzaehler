@@ -3,6 +3,11 @@
 @using Models
 @{
     ViewData["Title"] = "academia";
+    var attrs = typeof(Stromzaehler.Startup).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false);
+    if (attrs.Length == 0)
+        ViewData["GitHash"] = "none version found";
+    else
+        ViewData["GitHash"] = ((System.Reflection.AssemblyInformationalVersionAttribute)attrs[0]).InformationalVersion;
 }
 
 
